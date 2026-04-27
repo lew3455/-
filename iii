@@ -1,0 +1,49 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <cstdlib>
+#include <chrono>
+#include <thread>
+#include <unistd.h>
+using namespace std;
+int main() {
+    auto lasttime = chrono::high_resolution_clock::now();
+    if (geteuid() != 0) {
+        cout << "sudo" << endl;
+        return 1;
+    }
+    int sum=0;
+    int frame=0;
+    string max_freq;
+    ifstream freq_file("/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq");
+    if (freq_file.is_open()) {
+        freq_file >> max_freq; 
+        freq_file.close();
+    } else {
+        max_freq = "4000000"; 
+    }
+    string un = "cpupower frequency-set -u " + max_freq + " > /dev/null 2>&1";
+    while (true) {
+        string j = "/sys/class/thermal/thermal_zone0/temp";
+        ifstream openfile(j);
+        if (!openfile.is_open()){
+            cout << "ซวยแล้วหนู"<<endl;
+            return 1;
+        }
+        double k ;
+        openfile>>k;
+        k /=1000.0;
+        cout << k <<endl;
+        if (k<70&&sum>0){
+            system(un.c_str());
+            system("cpupower frequency-set -g performance > /dev/null 2>&1");
+            sum=0;
+        }
+        else if (k>=80){
+            system("cpupower frequency-set -u 1.5GHz > /dev/null 2>&1");
+            sum++;
+        }
+        this_thread::sleep_for(chrono::seconds(3));
+    }
+    return 0;
+}
