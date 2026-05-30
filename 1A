@@ -1,0 +1,14 @@
+#include <bits/stdc++.h>
+using namespace std;
+int main(){
+    long long y,u,e;
+    cin>>y>>u>>e;
+    long long sum=0;
+    long long sum_1=0;
+    sum=y/e;
+    sum_1=u/e;
+    if ((y%e)>0){sum++;}
+    if ((u%e)>0){sum_1++;}
+    long long t = sum*sum_1;
+    cout <<t<<endl;
+}
